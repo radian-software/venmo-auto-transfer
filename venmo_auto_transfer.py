@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import decimal
 import os
 import sys
 import uuid
@@ -44,7 +45,51 @@ def get_current_balance(access_token):
     personal_account = [
         acct for acct in resp.json() if acct["identityType"] == "personal"
     ][0]
-    return personal_account["balance"]
+    return decimal.Decimal(personal_account["balance"]) / 100
+
+
+def get_primary_bank_id(access_token):
+    csrf_cookie = NotImplemented
+    resp = requests.get(
+        "https://account.venmo.com/api/payment-methods",
+        cookies={
+            "v_id": "null",
+            "api_access_token": access_token,
+            "_csrf": csrf_cookie,
+        },
+        headers={
+            "User-Agent": user_agent,
+        },
+    )
+    assert resp.status_code == 200, resp.status_code
+    primary_bank = [
+        bank for bank in resp.json() if bank["roles"]["balanceTransfers"] == "primary"
+    ][0]
+    return primary_bank["value"]
+
+
+def transfer_balance(access_token, amount):
+    csrf_cookie = NotImplemented
+    csrf_token = NotImplemented
+    bank_id = NotImplemented
+    resp = requests.post(
+        "https://account.venmo.com/api/transfer",
+        cookies={
+            "v_id": "null",
+            "api_access_token": access_token,
+            "_csrf": csrf_cookie,
+        },
+        json={
+            "fundingInstrumentId": bank_id,
+            "amount": int(amount * 100),
+            "type": "standard",
+        },
+        headers={
+            "User-Agent": user_agent,
+            "Csrf-Token": csrf_token,
+        },
+    )
+    assert resp.status_code == 201, resp.status_code
 
 
 def main():
@@ -61,7 +106,8 @@ def main():
     balance = get_current_balance(access_token)
     log(f"current Venmo balance is ${balance:.2f}")
     if args.transfer and balance > 0:
-        log("transferring to linked bank account")
+        primary_bank_id = get_primary_bank_id(access_token)
+        log(f"primary bank account has ID ${primary_bank_id}")
     sys.exit(0)
 
 
