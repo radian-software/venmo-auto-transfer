@@ -214,7 +214,7 @@ def main():
     log(f"current Venmo balance is ${balance:.2f}")
     if args.transfer and balance > 0:
         bank_id = get_primary_bank_id(access_token)
-        amount = decimal.Decimal("0.01")
+        amount = balance  # transfer everything
         log(f"transferring ${amount:.2f} to primary bank account with ID {bank_id}")
         transfer_balance(access_token, bank_id, amount)
         new_balance = get_current_balance(access_token)
