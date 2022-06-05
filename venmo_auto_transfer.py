@@ -2,7 +2,9 @@
 
 import argparse
 import decimal
+import json
 import os
+import re
 import sys
 import uuid
 
@@ -20,25 +22,82 @@ def fatal(msg):
 
 
 user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36"
+device_id = f"fp01-{uuid.uuid4()}"
+
+
+def perform_login(username, password):
+    resp = requests.post(
+        "https://venmo.com/login",
+        data={
+            "phoneEmailUsername": username,
+            "password": password,
+            "return_json": "true",
+        },
+        cookies={
+            "v_id": device_id,
+        },
+        headers={
+            "user-agent": user_agent,
+        },
+    )
+    if resp.status_code != 401:
+        log(resp.text)
+        fatal(f"got unexpected status code {resp.status_code} on /login POST")
+    try:
+        if resp.json()["error"]["message"] != "Additional authentication is required":
+            raise Exception
+    except Exception:
+        log(resp.text)
+        fatal(f"got unexpected response from /login POST")
+    otp_secret = resp.headers["venmo-otp-secret"]
+    resp = requests.get(
+        "https://account.venmo.com/account/mfa/verify-bank",
+        params={
+            "k": otp_secret,
+        },
+        cookies={
+            "v_id": device_id,
+        },
+        headers={
+            "user-agent": user_agent,
+        },
+    )
+    assert resp.status_code == 200, resp.status_code
+    csrf_cookie = resp.cookies["_csrf"]
+    next_data_match = re.search(
+        r'<script id="__NEXT_DATA__" type="application/json">([^<>]+)</script>',
+        resp.text,
+    )
+    assert next_data_match
+    next_data = json.loads(next_data_match.group(1))
+    csrf_token = next_data["props"]["pageProps"]["csrfToken"]
+    resp = requests.post(
+        "https://account.venmo.com/api/account/mfa/sign-in",
+        cookies={
+            "v_id": device_id,
+            "_csrf": csrf_cookie,
+        },
+        headers={
+            "csrf-token": csrf_token,
+            "venmo-otp-secret": otp_secret,
+        },
+    )
+    assert resp.status_code == 200, resp.status_code
+    return resp.cookies["api_access_token"]
 
 
 def get_current_balance(access_token):
     resp = requests.get(
         "https://account.venmo.com/api/user/identities",
         cookies={
-            # If v_id is omitted the request is blocked with a 404, but
-            # the value does not seem to be checked. Normally it is a
-            # device ID in the form of a UUID with the prefix fp01, but I
-            # have decided to ignore that since it does not seem to be a
-            # requirement.
-            "v_id": "null",
+            "v_id": device_id,
             "api_access_token": access_token,
         },
         # Setting the user agent is not required per se, but the
         # requests library user agent appears to be blocked
         # specifically, so we have to set it to something.
         headers={
-            "User-Agent": user_agent,
+            "user-agent": user_agent,
         },
     )
     assert resp.status_code == 200, resp.status_code
@@ -53,12 +112,12 @@ def get_primary_bank_id(access_token):
     resp = requests.get(
         "https://account.venmo.com/api/payment-methods",
         cookies={
-            "v_id": "null",
+            "v_id": device_id,
             "api_access_token": access_token,
             "_csrf": csrf_cookie,
         },
         headers={
-            "User-Agent": user_agent,
+            "user-agent": user_agent,
         },
     )
     assert resp.status_code == 200, resp.status_code
@@ -75,7 +134,7 @@ def transfer_balance(access_token, amount):
     resp = requests.post(
         "https://account.venmo.com/api/transfer",
         cookies={
-            "v_id": "null",
+            "v_id": device_id,
             "api_access_token": access_token,
             "_csrf": csrf_cookie,
         },
@@ -85,8 +144,8 @@ def transfer_balance(access_token, amount):
             "type": "standard",
         },
         headers={
-            "User-Agent": user_agent,
-            "Csrf-Token": csrf_token,
+            "user-agent": user_agent,
+            "csrf-token": csrf_token,
         },
     )
     assert resp.status_code == 201, resp.status_code
@@ -102,7 +161,9 @@ def main():
     )
     args = parser.parse_args()
     dotenv.load_dotenv()
-    access_token = os.environ["VENMO_TOKEN"]
+    username = os.environ["VENMO_USERNAME"]
+    password = os.environ["VENMO_PASSWORD"]
+    access_token = perform_login(username, password)
     balance = get_current_balance(access_token)
     log(f"current Venmo balance is ${balance:.2f}")
     if args.transfer and balance > 0:
