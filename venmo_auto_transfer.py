@@ -14,7 +14,7 @@ import requests
 
 
 def log(msg):
-    print(msg, file=sys.stderr)
+    print(f"venmo_auto_transfer: {msg}", file=sys.stderr)
 
 
 def fatal(msg):
