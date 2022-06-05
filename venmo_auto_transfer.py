@@ -25,7 +25,7 @@ user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 device_id = f"fp01-{uuid.uuid4()}"
 
 
-def perform_login(username, password):
+def perform_login(username, password, bank_account_number):
     resp = requests.post(
         "https://venmo.com/login",
         data={
@@ -79,7 +79,12 @@ def perform_login(username, password):
         },
         headers={
             "csrf-token": csrf_token,
+            "xsrf-token": csrf_token,
             "venmo-otp-secret": otp_secret,
+            "user-agent": user_agent,
+        },
+        json={
+            "accountNumber": bank_account_number,
         },
     )
     assert resp.status_code == 200, resp.status_code
@@ -163,7 +168,8 @@ def main():
     dotenv.load_dotenv()
     username = os.environ["VENMO_USERNAME"]
     password = os.environ["VENMO_PASSWORD"]
-    access_token = perform_login(username, password)
+    bank_account_number = os.environ["VENMO_BANK_ACCOUNT_NUMBER"]
+    access_token = perform_login(username, password, bank_account_number)
     balance = get_current_balance(access_token)
     log(f"current Venmo balance is ${balance:.2f}")
     if args.transfer and balance > 0:
