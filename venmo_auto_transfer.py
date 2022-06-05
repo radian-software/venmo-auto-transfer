@@ -219,6 +219,9 @@ def main():
         transfer_balance(access_token, bank_id, amount)
         new_balance = get_current_balance(access_token)
         log(f"success; new balance is ${new_balance:.2f}")
+        if url := os.environ.get("WEBHOOK_URL"):
+            log(f"logging success to webhook at {url}")
+            requests.get(url)
     sys.exit(0)
 
 
