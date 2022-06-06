@@ -2,8 +2,8 @@
 
 > **As a:** Venmo user
 >
-> **I want:** No option to automatically deposit payments into my bank
-> account
+> **I want:** Payments to deposit into my Venmo balance instead of my
+> bank account
 >
 > **So that:** I can avoid the complexities of a traditional financial
 > institution, such as being FDIC-insured and earning interest
