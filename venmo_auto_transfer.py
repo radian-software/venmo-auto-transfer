@@ -194,6 +194,12 @@ def main():
         action="store_true",
         help="Transfer balance to bank account if nonzero",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Print access token",
+    )
     args = parser.parse_args()
     dotenv.load_dotenv()
     access_token = os.environ.get("VENMO_ACCESS_TOKEN")
@@ -210,6 +216,8 @@ def main():
             os.environ["VENMO_BANK_ACCOUNT_NUMBER"],
         )
         log(f"obtained new API access token from login")
+    if args.verbose:
+        log(f"access token: {access_token}")
     balance = get_current_balance(access_token)
     log(f"current Venmo balance is ${balance:.2f}")
     if args.transfer and balance > 0:
