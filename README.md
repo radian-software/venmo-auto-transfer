@@ -7,6 +7,9 @@
 >
 > **So that:** I can avoid the complexities of a traditional financial
 > institution, such as being FDIC-insured and earning interest
+>
+> —[Venmo product manager](https://twitter.com/shituserstory),
+> probably
 
 This is a simple application which uses a
 [reverse-engineered](https://en.wikipedia.org/wiki/Reverse_engineering)
