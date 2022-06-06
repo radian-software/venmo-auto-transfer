@@ -59,6 +59,29 @@ transfers (likely the same as your 2FA bank, but not necessarily).
 Note that this script is set to work for your PERSONAL Venmo account;
 any linked business accounts are ignored.
 
+## Suggested deployment
+
+I would recommend running `./venmo_auto_transfer.bash -t` on a cron
+job on your personal computer once a day or so. You'd best avoid using
+a cloud server because such IPs are easily blocked by Venmo and you
+want the traffic to look relatively organic (they can't block your IP
+without blocking your actual usage).
+
+You can set up an account on
+[Healthchecks.io](https://healthchecks.io/) and put your healthcheck
+URL in `WEBHOOK_URL=` in the `.env` file. This will cause the script
+to notify Healthchecks.io automatically on a successful run, and you
+can get an email notification if the script starts failing for too
+many days in a row (e.g., due to a Venmo API change).
+
+## Limitations
+
+This will generate a `Sign-in attempt from new device` email from
+Venmo every time the script runs. I suggest you create a filter for
+them, though this obviously has a security drawback. It's not your
+fault though, it's Venmo's fault for implementing the anti-feature
+that led to this script's necessity in the first place.
+
 ## Troubleshooting
 
 In order to avoid tripping rate limits related to authentication, the
@@ -110,3 +133,7 @@ configuration.
   has a stronger authentication mechanism since you don't have to
   repeatedly sign in to that, but it would also be more of a pain to
   reverse engineer.)
+* If you hit the 2FA endpoint too many times in a short period, you
+  will get rate limited and Venmo will start reporting a bogus error
+  message about your bank account number being invalid. Try again the
+  next day.
