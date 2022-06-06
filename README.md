@@ -13,13 +13,14 @@
 
 This is a simple application which uses a
 [reverse-engineered](https://en.wikipedia.org/wiki/Reverse_engineering)
-client for [Venmo](https://venmo.com/) API to automatically deposit
-your Venmo balance into your bank account. This option is available
-for free within the Venmo app or website at any time, but (unlike with
-similar apps) there is no way to set payments to deposit into your
-bank account automatically. This is because Venmo makes a profit at
-your expense when you leave your money with them, and they have a
-business incentive to make it inconvenient to be fiscally responsible.
+client for the internal [Venmo](https://venmo.com/) web API to
+automatically deposit your Venmo balance into your bank account. This
+option is available for free within the Venmo app or website at any
+time, but (unlike with similar apps) there is no way to set payments
+to deposit into your bank account automatically. This is because Venmo
+makes a profit at your expense when you leave your money with them,
+and they have a business incentive to make it inconvenient to be
+fiscally responsible.
 
 ## Dependencies
 
