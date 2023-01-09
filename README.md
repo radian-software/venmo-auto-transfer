@@ -1,5 +1,7 @@
 # venmo-auto-transfer
 
+Working as of 2023-01-08, may break in future
+
 > **As a:** Venmo user
 >
 > **I want:** Payments to deposit into my Venmo balance instead of my

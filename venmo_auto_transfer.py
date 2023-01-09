@@ -26,15 +26,19 @@ user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 device_id = f"fp01-{uuid.uuid4()}"
 
 
-def get_csrf_data(resp):
+def get_next_data(resp):
     assert resp.status_code == 200, resp.status_code
-    csrf_cookie = resp.cookies["_csrf"]
     next_data_match = re.search(
         r'<script id="__NEXT_DATA__" type="application/json">([^<>]+)</script>',
         resp.text,
     )
     assert next_data_match
-    next_data = json.loads(next_data_match.group(1))
+    return json.loads(next_data_match.group(1))
+
+
+def get_csrf_data(resp):
+    next_data = get_next_data(resp)
+    csrf_cookie = resp.cookies["_csrf"]
     csrf_token = next_data["props"]["pageProps"]["csrfToken"]
     return types.SimpleNamespace(cookie=csrf_cookie, token=csrf_token)
 
@@ -121,33 +125,22 @@ def get_current_balance(access_token):
 
 
 def get_primary_bank_id(access_token):
-    csrf = get_csrf_data(
+    next_data = get_next_data(
         requests.get(
             "https://account.venmo.com/cashout",
             cookies={
-                "v_id": device_id,
                 "api_access_token": access_token,
             },
+            # Same as above, we have to set the user agent because
+            # requests is blocked.
             headers={
                 "user-agent": user_agent,
             },
         )
     )
-    resp = requests.get(
-        "https://account.venmo.com/api/payment-methods",
-        cookies={
-            "v_id": device_id,
-            "api_access_token": access_token,
-            "_csrf": csrf.cookie,
-        },
-        headers={
-            "user-agent": user_agent,
-        },
-    )
-    assert resp.status_code == 200, resp.status_code
     primary_bank = [
         bank
-        for bank in resp.json()
+        for bank in next_data["props"]["pageProps"]["standardItems"]
         if bank["roles"].get("balanceTransfers") == "primary"
     ][0]
     return primary_bank["value"]
