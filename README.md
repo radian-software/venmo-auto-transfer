@@ -140,3 +140,10 @@ configuration.
   will get rate limited and Venmo will start reporting a bogus error
   message about your bank account number being invalid. Try again the
   next day.
+
+## See also
+
+There is a much more full featured Venmo API client
+[here](https://github.com/evanpurkhiser/venmo-api-unofficial) with a
+similar command-line transfer interface
+[here](https://github.com/evanpurkhiser/venmo-auto-cashout)!
