@@ -104,24 +104,24 @@ def perform_login(username, password, bank_account_number):
 
 
 def get_current_balance(access_token):
-    resp = requests.get(
-        "https://account.venmo.com/api/user/identities",
-        cookies={
-            "v_id": device_id,
-            "api_access_token": access_token,
-        },
-        # Setting the user agent is not required per se, but the
-        # requests library user agent appears to be blocked
-        # specifically, so we have to set it to something.
-        headers={
-            "user-agent": user_agent,
-        },
+    next_data = get_next_data(
+        requests.get(
+            "https://account.venmo.com/",
+            cookies={
+                "v_id": device_id,
+                "api_access_token": access_token,
+            },
+            # Setting the user agent is not required per se, but the
+            # requests library user agent appears to be blocked
+            # specifically, so we have to set it to something.
+            headers={
+                "user-agent": user_agent,
+            },
+        )
     )
-    assert resp.status_code == 200, resp.status_code
-    personal_account = [
-        acct for acct in resp.json() if acct["identityType"] == "personal"
-    ][0]
-    return decimal.Decimal(personal_account["balance"]) / 100
+    return decimal.Decimal(
+        next_data["props"]["pageProps"]["initialMobxState"]["profileStore"]["balance"]
+    )
 
 
 def get_primary_bank_id(access_token):
