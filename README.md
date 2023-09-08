@@ -8,7 +8,10 @@ Working as of 2023-01-08, may break in future
 > bank account
 >
 > **So that:** I can avoid the complexities of a traditional financial
-> institution, such as being FDIC-insured and earning interest
+> institution, such as being FDIC-insured and earning interest, and
+> add spice to my life by [randomly being locked out of my
+> money](https://old.reddit.com/r/venmo/comments/16bzr4e/oauth2_exception_unauthorized_action/)
+> from time to time
 >
 > —[Venmo product manager](https://twitter.com/shituserstory),
 > probably
