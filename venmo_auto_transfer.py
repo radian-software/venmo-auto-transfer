@@ -44,6 +44,7 @@ def get_csrf_data(resp):
 
 
 def perform_login(username, password, bank_account_number):
+    requests.get("https://venmo.com/account/sign-in", cookies={"v_id": device_id})
     csrf = get_csrf_data(
         requests.get(
             "https://venmo.com/account/sign-in",
@@ -72,17 +73,14 @@ def perform_login(username, password, bank_account_number):
             "user-agent": user_agent,
         },
     )
-    if resp.status_code == 401:
+    if resp.status_code == 400:
         try:
-            if (
-                resp.json()["error"]["message"]
-                != "Additional authentication is required"
-            ):
+            if resp.json()["issue"] != "Additional authentication is required":
                 raise Exception
         except Exception:
             log(resp.text)
             fatal(f"got unexpected response from /login POST")
-        otp_secret = resp.headers["venmo-otp-secret"]
+        otp_secret = resp.json()["secret"]
         csrf = get_csrf_data(
             requests.get(
                 "https://account.venmo.com/account/mfa/verify-bank",
