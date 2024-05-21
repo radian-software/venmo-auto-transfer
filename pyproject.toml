@@ -6,7 +6,7 @@ authors = ["Radian LLC <contact+venmo-auto-transfer@radian.codes>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-requests = "^2.31.0"
+requests = "^2.32.0"
 python-dotenv = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
