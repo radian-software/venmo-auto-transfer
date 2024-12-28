@@ -1,6 +1,7 @@
 # venmo-auto-transfer
 
-Working as of 2023-01-08, may break in future
+Working as of 2024-12-27 despite concerted attempts by Venmo to make
+their product less functional, may break in future
 
 > **As a:** Venmo user
 >
