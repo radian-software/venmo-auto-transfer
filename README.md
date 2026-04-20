@@ -3,6 +3,8 @@
 Working as of 2024-12-27 despite concerted attempts by Venmo to make
 their product less functional, may break in future
 
+Eventually replaced by https://github.com/radian-software/venmo-auto-transfer-neue
+
 > **As a:** Venmo user
 >
 > **I want:** Payments to deposit into my Venmo balance instead of my
